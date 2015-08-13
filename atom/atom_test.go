@@ -25,8 +25,8 @@ func TestParse(t *testing.T) {
 				Updated: time.Date(2003, 12, 13, 18, 30, 02, 0, time.UTC),
 				Authors: Persons("John Doe"),
 				ID:      "urn:uuid:60a76c80-d399-11d9-b93C-0003939e0af6",
-				Entries: []Entry{
-					Entry{
+				Entries: []*Entry{
+					&Entry{
 						Title:   S("Atom-Powered Robots Run Amok"),
 						Links:   URLs("http://example.org/2003/12/13/atom03"),
 						ID:      "urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a",

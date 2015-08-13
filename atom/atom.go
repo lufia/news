@@ -3,11 +3,10 @@ package atom
 import (
 	"encoding/xml"
 	"io"
-	"reflect"
 	"time"
 )
 
-// CategoryはAtom文書におけるCategory要素
+// CategoryはAtom文書におけるCategory要素をあらわす。
 type Category struct {
 	Term   string `xml:"term,attr"`
 	Scheme string `xml:"scheme,attr,omitempty"`
@@ -34,6 +33,7 @@ type Link struct {
 	URL  string `xml:"href,attr"`
 }
 
+// FeedはAtom文書におけるFeed要素をあらわす。
 type Feed struct {
 	XMLName xml.Name `xml:"feed"`
 
@@ -55,11 +55,12 @@ type Feed struct {
 	Rights   Text      `xml:"rights,omitempty"`
 	Updated  time.Time `xml:"updated"`
 	Summary  string    `xml:"summary,omitempty"`
-	Entries  []Entry   `xml:"entry"`
+	Entries  []*Entry  `xml:"entry"`
 }
 
+// EntryはAtom文書におけるEntry要素をあらわす。
 type Entry struct {
-	//Contributors []Person `xml:"contributor"`
+	//Contributors []Person `xml:"contributor,omitempty"`
 	//Created time.Time `xml:"created,omitempty"?
 	//Categories []Category `xml:"category,omitempty"`
 	//Source Link?
@@ -84,8 +85,4 @@ func Parse(r io.Reader) (feed *Feed, err error) {
 	}
 	feed = &x
 	return
-}
-
-func (feed *Feed) Equal(other *Feed) bool {
-	return reflect.DeepEqual(feed, other)
 }
