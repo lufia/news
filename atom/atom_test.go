@@ -1,6 +1,7 @@
 package atom
 
 import (
+	"bytes"
 	"encoding/xml"
 	"reflect"
 	"strings"
@@ -48,6 +49,28 @@ func TestParse(t *testing.T) {
 		if !reflect.DeepEqual(feed, expect) {
 			t.Errorf("Parse(%q) = %#v; Expect %#v", v.XMLString, feed, expect)
 		}
+	}
+}
+
+func TestMailBody_WriteTo(t *testing.T) {
+	tab := []struct {
+		Entry          *Entry
+		ExpectedString string
+	}{
+		{
+			Entry: &Entry{
+				Content: S("test"),
+			},
+		},
+	}
+	for _, v := range tab {
+		var buf bytes.Buffer
+		body := (*MailBody)(v.Entry)
+		_, err := body.WriteTo(&buf)
+		if err != nil {
+			t.Fatalf("WriteTo() = %v", err)
+		}
+		t.Log("Output:", string(buf.Bytes()))
 	}
 }
 

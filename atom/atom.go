@@ -3,6 +3,8 @@ package atom
 import (
 	"encoding/xml"
 	"io"
+	"mime/multipart"
+	"net/textproto"
 	"time"
 )
 
@@ -17,6 +19,10 @@ type Category struct {
 type Text struct {
 	Type    string `xml:"type,attr"`
 	Content string `xml:",chardata"`
+}
+
+func (t Text) IsZero() bool {
+	return t.Content == ""
 }
 
 // PersonはAtom文書におけるPersonコンストラクトをあらわす。
@@ -74,6 +80,64 @@ type Entry struct {
 	Rights    Text      `xml:"rights,omitempty"`
 	Summary   Text      `xml:"summary,omitempty"`
 	Content   Text      `xml:"content,omitempty"`
+}
+
+type MailBody Entry
+
+func (body *MailBody) WriteTo(w io.Writer) (n int64, err error) {
+	m := multipart.NewWriter(w)
+	written, err := body.writeTextTo(m)
+	if err != nil {
+		return
+	}
+	n += written
+	written, err = body.writeHTMLTo(m)
+	if err != nil {
+		return
+	}
+	n += written
+	return
+}
+
+func (body *MailBody) textBody() []byte {
+	if !body.Content.IsZero() {
+		return []byte(body.Content.Content)
+	}
+	return []byte(body.Summary.Content)
+}
+
+func (body *MailBody) htmlBody() []byte {
+	return body.textBody() // TODO: quick
+}
+
+func (body *MailBody) writeTextTo(m *multipart.Writer) (n int64, err error) {
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Type", "text/plain")
+	w, err := m.CreatePart(h)
+	if err != nil {
+		return
+	}
+	written, err := w.Write(body.textBody())
+	if err != nil {
+		return
+	}
+	n += int64(written)
+	return
+}
+
+func (body *MailBody) writeHTMLTo(m *multipart.Writer) (n int64, err error) {
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Type", "text/html")
+	w, err := m.CreatePart(h)
+	if err != nil {
+		return
+	}
+	written, err := w.Write(body.htmlBody())
+	if err != nil {
+		return
+	}
+	n += int64(written)
+	return
 }
 
 func Parse(r io.Reader) (feed *Feed, err error) {
