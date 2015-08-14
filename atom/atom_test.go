@@ -52,6 +52,39 @@ func TestParse(t *testing.T) {
 	}
 }
 
+func TestText_HTML(t *testing.T) {
+	tab := []struct {
+		Text   Text
+		Expect string
+	}{
+		{
+			Text:   Text{Type: "text", Content: "<test>ab</test>"},
+			Expect: "<pre><test>ab</test></pre>",
+		},
+		{
+			Text:   Text{Type: "html", Content: "&lt;test&gt;ab&lt;/test&gt;"},
+			Expect: "<div><test>ab</test></div>",
+		},
+		{
+			Text:   Text{Type: "xhtml", Content: "<div>&lt;em&gt;ab</div>"},
+			Expect: "&lt;em&gt;ab",
+		},
+		{
+			Text:   Text{Type: "xhtml", Content: "<div><em>ab</em></div>"},
+			Expect: "<em>ab</em>",
+		},
+	}
+	for _, v := range tab {
+		s, err := v.Text.HTML()
+		if err != nil {
+			t.Fatalf("(%#v).HTML() = %v", v.Text, err)
+		}
+		if s != v.Expect {
+			t.Errorf("(%#v).HTML() = %q; Expect %q", v.Text, s, v.Expect)
+		}
+	}
+}
+
 func TestMailBody_WriteTo(t *testing.T) {
 	tab := []struct {
 		Entry          *Entry

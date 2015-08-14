@@ -1,11 +1,16 @@
 package atom
 
 import (
+	"bytes"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"mime/multipart"
 	"net/textproto"
+	"strings"
 	"time"
+
+	"golang.org/x/net/html"
 )
 
 // CategoryはAtom文書におけるCategory要素をあらわす。
@@ -21,8 +26,79 @@ type Text struct {
 	Content string `xml:",chardata"`
 }
 
+// IsZeroはtが空だった場合にtrueを返す。
 func (t Text) IsZero() bool {
 	return t.Content == ""
+}
+
+func (t Text) String() string {
+	switch t.Type {
+	case "html":
+	case "xhtml":
+	case "text":
+		return t.Content
+	default:
+		return t.Content
+	}
+	return ""
+}
+
+func (t Text) HTML() (s string, err error) {
+	switch t.Type {
+	case "html":
+		t := html.UnescapeString(t.Content)
+		s = fmt.Sprintf("<div>%s</div>", t)
+	case "xhtml":
+		r := strings.NewReader(t.Content)
+		tokenizer := html.NewTokenizer(r)
+		err = nextToken(tokenizer)
+		if err != nil {
+			return
+		}
+		s, err = buildHTML(tokenizer)
+	case "text":
+		s = fmt.Sprintf("<pre>%s</pre>", t.Content)
+	default:
+		s = fmt.Sprintf("<pre>%s</pre>", t.Content)
+	}
+	return
+}
+
+func buildHTML(tokenizer *html.Tokenizer) (s string, err error) {
+	buf := new(bytes.Buffer)
+
+	bp := 0
+	if tag, _ := tokenizer.TagName(); string(tag) == "div" {
+		div := tokenizer.Raw()
+		buf.Write(div)
+		bp = len(div)
+		err = nextToken(tokenizer)
+	}
+
+	ep := bp
+	for err != io.EOF {
+		if err != nil && err != io.EOF {
+			return
+		}
+		ep = buf.Len()
+		b := tokenizer.Raw()
+		if _, err := buf.Write(b); err != nil {
+			return "", err
+		}
+		err = nextToken(tokenizer)
+	}
+	b := buf.Bytes()
+	if bp > 0 {
+		b = b[bp:ep]
+	}
+	return string(b), nil
+}
+
+func nextToken(tokenizer *html.Tokenizer) error {
+	if t := tokenizer.Next(); t == html.ErrorToken {
+		return tokenizer.Err()
+	}
+	return nil
 }
 
 // PersonはAtom文書におけるPersonコンストラクトをあらわす。
@@ -73,7 +149,7 @@ type Entry struct {
 
 	Title     Text      `xml:"title"`
 	Links     []Link    `xml:"link,omitempty"`
-	Author    []Person  `xml:"author,omitempty"`
+	Authors   []Person  `xml:"author,omitempty"`
 	ID        string    `xml:"id"`
 	Updated   time.Time `xml:"updated"`
 	Published time.Time `xml:"published,omitempty"`
@@ -82,10 +158,18 @@ type Entry struct {
 	Content   Text      `xml:"content,omitempty"`
 }
 
+func (entry *Entry) Article() string {
+	return ""
+}
+
 type MailBody Entry
 
 func (body *MailBody) WriteTo(w io.Writer) (n int64, err error) {
 	m := multipart.NewWriter(w)
+	err = m.SetBoundary("multipart_boundary_str")
+	if err != nil {
+		return
+	}
 	written, err := body.writeTextTo(m)
 	if err != nil {
 		return
@@ -101,9 +185,9 @@ func (body *MailBody) WriteTo(w io.Writer) (n int64, err error) {
 
 func (body *MailBody) textBody() []byte {
 	if !body.Content.IsZero() {
-		return []byte(body.Content.Content)
+		return []byte(body.Content.String())
 	}
-	return []byte(body.Summary.Content)
+	return []byte(body.Summary.String())
 }
 
 func (body *MailBody) htmlBody() []byte {
