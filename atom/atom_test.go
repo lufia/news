@@ -52,6 +52,35 @@ func TestParse(t *testing.T) {
 	}
 }
 
+func TestText_Plain(t *testing.T) {
+	tab := []struct {
+		Text   Text
+		Expect string
+	}{
+		{
+			Text:   Text{Type: "text", Content: "<test>ab</test>"},
+			Expect: "<test>ab</test>",
+		},
+		//{
+		//	Text:   Text{Type: "html", Content: "&lt;p&gt;ab&lt;/p&gt;"},
+		//	Expect: "ab",
+		//},
+		//{
+		//	Text:   Text{Type: "xhtml", Content: "<p>&lt;ab&gt;</p>"},
+		//	Expect: "<ab>",
+		//},
+	}
+	for _, v := range tab {
+		s, err := v.Text.Plain()
+		if err != nil {
+			t.Fatalf("(%#v).Plain() = %v", v.Text, err)
+		}
+		if s != v.Expect {
+			t.Errorf("(%#v).Plain() = %q; Expect %q", v.Text, s, v.Expect)
+		}
+	}
+}
+
 func TestText_HTML(t *testing.T) {
 	tab := []struct {
 		Text   Text

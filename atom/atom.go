@@ -3,6 +3,7 @@ package atom
 import (
 	"bytes"
 	"encoding/xml"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -31,16 +32,26 @@ func (t Text) IsZero() bool {
 	return t.Content == ""
 }
 
-func (t Text) String() string {
-	switch t.Type {
-	case "html":
-	case "xhtml":
-	case "text":
-		return t.Content
-	default:
-		return t.Content
+func buildPlain(n *html.Node) (s string, err error) {
+	buf := new(bytes.Buffer)
+	err = html.Render(buf, n)
+	if err != nil {
+		return
 	}
-	return ""
+	s = buf.String()
+	return
+}
+
+func (t Text) Plain() (s string, err error) {
+	switch t.Type {
+	case "html", "xhtml":
+		err = errors.New("not implement")
+	case "text":
+		s = t.Content
+	default:
+		s = t.Content
+	}
+	return
 }
 
 func (t Text) HTML() (s string, err error) {
@@ -62,6 +73,13 @@ func (t Text) HTML() (s string, err error) {
 		s = fmt.Sprintf("<pre>%s</pre>", t.Content)
 	}
 	return
+}
+
+func nextToken(tokenizer *html.Tokenizer) error {
+	if t := tokenizer.Next(); t == html.ErrorToken {
+		return tokenizer.Err()
+	}
+	return nil
 }
 
 func buildHTML(tokenizer *html.Tokenizer) (s string, err error) {
@@ -92,13 +110,6 @@ func buildHTML(tokenizer *html.Tokenizer) (s string, err error) {
 		b = b[bp:ep]
 	}
 	return string(b), nil
-}
-
-func nextToken(tokenizer *html.Tokenizer) error {
-	if t := tokenizer.Next(); t == html.ErrorToken {
-		return tokenizer.Err()
-	}
-	return nil
 }
 
 // PersonはAtom文書におけるPersonコンストラクトをあらわす。
@@ -185,9 +196,9 @@ func (body *MailBody) WriteTo(w io.Writer) (n int64, err error) {
 
 func (body *MailBody) textBody() []byte {
 	if !body.Content.IsZero() {
-		return []byte(body.Content.String())
+		return []byte(body.Content.Content)
 	}
-	return []byte(body.Summary.String())
+	return []byte(body.Summary.Content)
 }
 
 func (body *MailBody) htmlBody() []byte {
