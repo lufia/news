@@ -5,6 +5,7 @@ import (
 	"encoding/xml"
 	"errors"
 	"io"
+	"time"
 
 	_ "github.com/lufia/news/feed/atom"
 	_ "github.com/lufia/news/feed/rss1"
@@ -95,4 +96,19 @@ func DetectDialect(r io.Reader) (*Dialect, error) {
 		}
 	}
 	return nil, errUnknownDialect
+}
+
+type Info struct {
+	Title   string
+	URL     string
+	Updated time.Time
+}
+
+type Channel interface {
+	Articles() []Article
+}
+
+type Article interface {
+	Info() *Info
+	io.WriterTo
 }
