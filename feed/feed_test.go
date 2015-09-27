@@ -8,13 +8,13 @@ import (
 func TestDetectDialect(t *testing.T) {
 	tab := []struct {
 		xml  string
-		want Dialect
+		want *Dialect
 	}{
 		{
 			xml: `<?xml version="1.0"?>
 				<feed xmlns="http://www.w3.org/2005/Atom">
 				</feed>`,
-			want: Dialect("atom"),
+			want: atomDialect,
 		},
 		{
 			xml: `<?xml version="1.0"?>
@@ -24,13 +24,13 @@ func TestDetectDialect(t *testing.T) {
 					xmlns:content="http://purl.org/rss/1.0/modules/content/"
 					xml:lang="ja">
 				</rdf:RDF>`,
-			want: Dialect("rss1.0"),
+			want: rss1Dialect,
 		},
 		{
 			xml: `<?xml version="1.0"?>
 				<rss version="2.0">
 				</rss>`,
-			want: Dialect("rss2.0"),
+			want: rss2Dialect,
 		},
 	}
 	for _, v := range tab {

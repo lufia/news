@@ -3,7 +3,7 @@ package main
 import (
 	"io"
 
-	"github.com/lufia/news/atom"
+	"github.com/lufia/news/feed/atom"
 )
 
 func (h *atomMailHeader) WriteTo(w io.Writer) (n int64, err error) {

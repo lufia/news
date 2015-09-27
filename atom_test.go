@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/lufia/news/atom"
+	"github.com/lufia/news/feed/atom"
 )
 
 func TestNewArrival(t *testing.T) {

@@ -1,4 +1,4 @@
-package rss
+package rss1
 
 import (
 	"encoding/xml"

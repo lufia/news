@@ -1,9 +1,13 @@
+// Package feed presets rss/atom reader.
 package feed
 
 import (
 	"encoding/xml"
 	"errors"
 	"io"
+
+	_ "github.com/lufia/news/feed/atom"
+	_ "github.com/lufia/news/feed/rss1"
 )
 
 type distinctElement struct {
@@ -26,11 +30,25 @@ func (rule distinctElement) Match(v distinctElement) bool {
 	return true
 }
 
-type Dialect string
+type Dialect struct {
+	Type string
+}
+
+var (
+	rss1Dialect = &Dialect{
+		Type: "rss1.0",
+	}
+	rss2Dialect = &Dialect{
+		Type: "rss2.0",
+	}
+	atomDialect = &Dialect{
+		Type: "atom",
+	}
+)
 
 var decisionTable = []struct {
 	elem    distinctElement
-	dialect Dialect
+	dialect *Dialect
 }{
 	{
 		elem: distinctElement{
@@ -39,7 +57,7 @@ var decisionTable = []struct {
 				Local: "RDF",
 			},
 		},
-		dialect: Dialect("rss1.0"),
+		dialect: rss1Dialect,
 	},
 	{
 		elem: distinctElement{
@@ -48,7 +66,7 @@ var decisionTable = []struct {
 			},
 			Version: "2.0",
 		},
-		dialect: Dialect("rss2.0"),
+		dialect: rss2Dialect,
 	},
 	{
 		elem: distinctElement{
@@ -57,7 +75,7 @@ var decisionTable = []struct {
 				Local: "feed",
 			},
 		},
-		dialect: Dialect("atom"),
+		dialect: atomDialect,
 	},
 }
 
@@ -65,16 +83,16 @@ var (
 	errUnknownDialect = errors.New("unknown dialect")
 )
 
-func DetectDialect(r io.Reader) (Dialect, error) {
+func DetectDialect(r io.Reader) (*Dialect, error) {
 	var x distinctElement
 	d := xml.NewDecoder(r)
 	if err := d.Decode(&x); err != nil {
-		return "", err
+		return nil, err
 	}
 	for _, v := range decisionTable {
-		if x == v.elem {
+		if v.elem.Match(x) {
 			return v.dialect, nil
 		}
 	}
-	return "", errUnknownDialect
+	return nil, errUnknownDialect
 }
