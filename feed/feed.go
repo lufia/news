@@ -2,13 +2,14 @@
 package feed
 
 import (
+	"bytes"
 	"encoding/xml"
 	"errors"
 	"io"
-	"time"
+	"io/ioutil"
 
-	_ "github.com/lufia/news/feed/atom"
-	_ "github.com/lufia/news/feed/rss1"
+	"github.com/lufia/news/feed/atom"
+	"github.com/lufia/news/feed/rss1"
 )
 
 type distinctElement struct {
@@ -32,18 +33,28 @@ func (rule distinctElement) Match(v distinctElement) bool {
 }
 
 type Dialect struct {
-	Type string
+	Type  string
+	Parse func(r io.Reader) (feed interface{}, err error)
 }
 
 var (
 	rss1Dialect = &Dialect{
 		Type: "rss1.0",
+		Parse: func(r io.Reader) (feed interface{}, err error) {
+			return rss1.Parse(r)
+		},
 	}
 	rss2Dialect = &Dialect{
 		Type: "rss2.0",
+		Parse: func(r io.Reader) (feed interface{}, err error) {
+			return nil, errors.New("not implemented")
+		},
 	}
 	atomDialect = &Dialect{
 		Type: "atom",
+		Parse: func(r io.Reader) (feed interface{}, err error) {
+			return atom.Parse(r)
+		},
 	}
 )
 
@@ -98,17 +109,19 @@ func DetectDialect(r io.Reader) (*Dialect, error) {
 	return nil, errUnknownDialect
 }
 
-type Info struct {
-	Title   string
-	URL     string
-	Updated time.Time
-}
-
-type Channel interface {
-	Articles() []Article
-}
-
-type Article interface {
-	Info() *Info
-	io.WriterTo
+func Parse(r io.Reader) (feed interface{}, err error) {
+	buf, err := ioutil.ReadAll(r)
+	if err != nil {
+		return
+	}
+	fin := bytes.NewReader(buf)
+	d, err := DetectDialect(fin)
+	if err != nil {
+		return
+	}
+	_, err = fin.Seek(0, 0)
+	if err != nil {
+		return
+	}
+	return d.Parse(fin)
 }
