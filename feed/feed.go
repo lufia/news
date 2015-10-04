@@ -7,9 +7,11 @@ import (
 	"errors"
 	"io"
 	"io/ioutil"
+	"time"
 
 	"github.com/lufia/news/feed/atom"
 	"github.com/lufia/news/feed/rss1"
+	"github.com/lufia/news/feed/rss2"
 )
 
 type distinctElement struct {
@@ -47,7 +49,7 @@ var (
 	rss2Dialect = &Dialect{
 		Type: "rss2.0",
 		Parse: func(r io.Reader) (feed interface{}, err error) {
-			return nil, errors.New("not implemented")
+			return rss2.Parse(r)
 		},
 	}
 	atomDialect = &Dialect{
@@ -109,7 +111,7 @@ func DetectDialect(r io.Reader) (*Dialect, error) {
 	return nil, errUnknownDialect
 }
 
-func Parse(r io.Reader) (feed interface{}, err error) {
+func parse(r io.Reader) (feed interface{}, err error) {
 	buf, err := ioutil.ReadAll(r)
 	if err != nil {
 		return
@@ -124,4 +126,37 @@ func Parse(r io.Reader) (feed interface{}, err error) {
 		return
 	}
 	return d.Parse(fin)
+}
+
+type Feed struct {
+	Title    string
+	URL      string
+	Articles []*Article
+}
+
+type Article struct {
+	Title     string
+	ID        string
+	URL       string
+	Author    string
+	Published time.Time
+	Content   string
+}
+
+func Parse(r io.Reader) (feed *Feed, err error) {
+	p, err := parse(r)
+	if err != nil {
+		return
+	}
+	switch v := p.(type) {
+	case *rss1.Feed:
+		_ = v
+		return nil, errors.New("not implement")
+	case *rss2.Feed:
+		return nil, errors.New("not implement")
+	case *atom.Feed:
+		return nil, errors.New("not implement")
+	default:
+		return nil, errors.New("unknown feed type")
+	}
 }
