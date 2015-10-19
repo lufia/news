@@ -37,24 +37,41 @@ type Feed struct {
 }
 
 type Channel struct {
-	Title       string    `xml:"title"`
-	Link        string    `xml:"link"`
-	Description string    `xml:"description"`
-	Language    string    `xml:"language"` // dc:language
-	Creator     string    `xml:"creator"`  // dc:creator
-	Date        time.Time `xml:"date"`     // dc:date
-	Items       []*Item   `xml:"item"`
+	Title         string   `xml:"title"`
+	Link          string   `xml:"link"`
+	Description   string   `xml:"description"`
+	Language      string   `xml:"language,omitempty"`
+	LastBuildDate Date     `xml:"lastBuildDate,omitempty"`
+	Category      Category `xml:"category,omitempty"`
+	Items         []*Item  `xml:"item"`
+
+	Creator string    `xml:"creator"` // dc:creator
+	Date    time.Time `xml:"date"`    // dc:date
 }
 
 type Item struct {
-	Title       string    `xml:"title"`
-	Link        string    `xml:"link"`
-	Description string    `xml:"description"`
-	Category    string    `xml:"category,omitempty"`
-	Subject     string    `xml:"subject"` // dc:subject
-	Creator     string    `xml:"creator"` // dc:creator
-	PubDate     Date      `xml:"pubDate"`
-	Date        time.Time `xml:"date"` // dc:date
+	Title       string     `xml:"title,omitempty"`
+	Link        string     `xml:"link,omitempty"`
+	Description string     `xml:"description,omitempty"`
+	Author      string     `xml:"author,omitempty"` // author's email address
+	Categories  []Category `xml:"category,omitempty"`
+	Guid        Guid       `xml:"guid,omietmpty"`
+	PubDate     Date       `xml:"pubDate,omitempty"`
+
+	Subject string    `xml:"subject,omitempty"` // dc:subject
+	Creator string    `xml:"creator,omitempty"` // dc:creator
+	Date    time.Time `xml:"date,omitempty"`    // dc:date
+	Content string    `xml:"encoded,omitempty"` // content:encoded
+}
+
+type Category struct {
+	Domain  string `xml:"domain,attr,omitempty"`
+	Content string `xml:",chardata"`
+}
+
+type Guid struct {
+	IsPermaLink bool   `xml:"isPermaLink,omitempty"`
+	Content     string `xml:",chardata"`
 }
 
 func Parse(r io.Reader) (feed *Feed, err error) {
