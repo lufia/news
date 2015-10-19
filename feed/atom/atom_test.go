@@ -1,7 +1,6 @@
 package atom
 
 import (
-	"bytes"
 	"encoding/xml"
 	"reflect"
 	"strings"
@@ -117,28 +116,6 @@ func TestText_HTML(t *testing.T) {
 		if s != v.Expect {
 			t.Errorf("(%#v).HTML() = %q; Expect %q", v.Text, s, v.Expect)
 		}
-	}
-}
-
-func TestMailBody_WriteTo(t *testing.T) {
-	tab := []struct {
-		Entry          *Entry
-		ExpectedString string
-	}{
-		{
-			Entry: &Entry{
-				Content: S("test"),
-			},
-		},
-	}
-	for _, v := range tab {
-		var buf bytes.Buffer
-		body := (*MailBody)(v.Entry)
-		_, err := body.WriteTo(&buf)
-		if err != nil {
-			t.Fatalf("WriteTo() = %v", err)
-		}
-		t.Log("Output:", string(buf.Bytes()))
 	}
 }
 

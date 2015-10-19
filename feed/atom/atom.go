@@ -6,8 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"mime/multipart"
-	"net/textproto"
 	"strings"
 	"time"
 
@@ -170,68 +168,6 @@ type Entry struct {
 
 func (entry *Entry) Article() string {
 	return ""
-}
-
-type MailBody Entry
-
-func (body *MailBody) WriteTo(w io.Writer) (n int64, err error) {
-	m := multipart.NewWriter(w)
-	err = m.SetBoundary("multipart_boundary_str")
-	if err != nil {
-		return
-	}
-	written, err := body.writeTextTo(m)
-	if err != nil {
-		return
-	}
-	n += written
-	written, err = body.writeHTMLTo(m)
-	if err != nil {
-		return
-	}
-	n += written
-	return
-}
-
-func (body *MailBody) textBody() []byte {
-	if !body.Content.IsZero() {
-		return []byte(body.Content.Content)
-	}
-	return []byte(body.Summary.Content)
-}
-
-func (body *MailBody) htmlBody() []byte {
-	return body.textBody() // TODO: quick
-}
-
-func (body *MailBody) writeTextTo(m *multipart.Writer) (n int64, err error) {
-	h := make(textproto.MIMEHeader)
-	h.Set("Content-Type", "text/plain")
-	w, err := m.CreatePart(h)
-	if err != nil {
-		return
-	}
-	written, err := w.Write(body.textBody())
-	if err != nil {
-		return
-	}
-	n += int64(written)
-	return
-}
-
-func (body *MailBody) writeHTMLTo(m *multipart.Writer) (n int64, err error) {
-	h := make(textproto.MIMEHeader)
-	h.Set("Content-Type", "text/html")
-	w, err := m.CreatePart(h)
-	if err != nil {
-		return
-	}
-	written, err := w.Write(body.htmlBody())
-	if err != nil {
-		return
-	}
-	n += int64(written)
-	return
 }
 
 func Parse(r io.Reader) (feed *Feed, err error) {
