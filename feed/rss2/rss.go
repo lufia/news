@@ -2,6 +2,7 @@ package rss2
 
 import (
 	"encoding/xml"
+	"errors"
 	"io"
 	"time"
 )
@@ -10,6 +11,10 @@ type Date time.Time
 
 const (
 	RFC2822 = "Mon, _2 Jan 2006 15:04:05 -0700"
+)
+
+var (
+	errNoItemID = errors.New("item hasn't <guid> or <link> tag")
 )
 
 func (date Date) String() string {
@@ -61,7 +66,24 @@ type Item struct {
 	Subject string    `xml:"subject,omitempty"` // dc:subject
 	Creator string    `xml:"creator,omitempty"` // dc:creator
 	Date    time.Time `xml:"date,omitempty"`    // dc:date
-	Content string    `xml:"encoded,omitempty"` // content:encoded
+	Encoded string    `xml:"encoded,omitempty"` // content:encoded
+}
+
+func (item *Item) Content() string {
+	if item.Encoded != "" {
+		return item.Encoded
+	}
+	return item.Description
+}
+
+func (item *Item) ID() (string, error) {
+	if item.Guid.IsPermaLink && item.Guid.Content != "" {
+		return item.Guid.Content, nil
+	}
+	if item.Link != "" {
+		return item.Link, nil
+	}
+	return "", errNoItemID
 }
 
 type Category struct {

@@ -131,16 +131,18 @@ func parse(r io.Reader) (feed interface{}, err error) {
 type Feed struct {
 	Title    string
 	URL      string
-	Articles []*Article
+	Summary  string
+	Articles []Article
 }
 
 type Article struct {
-	Title     string
-	ID        string
-	URL       string
-	Author    string
-	Published time.Time
-	Content   string
+	Title      string
+	ID         string
+	URL        string
+	Authors    []string
+	Published  time.Time
+	Categories []string
+	Content    string
 }
 
 func Parse(r io.Reader) (feed *Feed, err error) {
@@ -148,15 +150,49 @@ func Parse(r io.Reader) (feed *Feed, err error) {
 	if err != nil {
 		return
 	}
+	feed = &Feed{}
 	switch v := p.(type) {
 	case *rss1.Feed:
-		_ = v
 		return nil, errors.New("not implement")
 	case *rss2.Feed:
-		return nil, errors.New("not implement")
+		err = feed.ImportFromRSS2(v)
+		return
 	case *atom.Feed:
 		return nil, errors.New("not implement")
 	default:
 		return nil, errors.New("unknown feed type")
 	}
+}
+
+type rss2Item rss2.Item
+
+func (v *rss2Item) Authors() []string {
+	if v.Author == "" {
+		return []string{}
+	}
+	return []string{v.Author}
+}
+
+func (v *rss2Item) Published() time.Time {
+	return time.Time(v.PubDate)
+}
+
+func (feed *Feed) ImportFromRSS2(r *rss2.Feed) (err error) {
+	feed.Title = r.Channel.Title
+	feed.URL = r.Channel.Link
+	feed.Summary = r.Channel.Description
+	feed.Articles = make([]Article, len(r.Channel.Items))
+	for i, item := range r.Channel.Items {
+		v := (*rss2Item)(item)
+		p := &feed.Articles[i]
+		p.Title = item.Title
+		if p.ID, err = item.ID(); err != nil {
+			return
+		}
+		p.URL = item.Link
+		p.Authors = v.Authors()
+		p.Published = v.Published()
+		p.Content = item.Content()
+	}
+	return
 }

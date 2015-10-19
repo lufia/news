@@ -56,9 +56,9 @@ var xmlStringSimple = strings.TrimSpace(`
 			<pubDate>Tue, 10 Jun 2008 15:30:59 +0900</pubDate>
 		</item>
 		<item>
-			<title>記事タイトル1</title>
+			<title><![CDATA[記事タイトル1]]></title>
 			<link>http://phpjavascriptroom.com/post1.html</link>
-			<description>記事の内容です。</description>
+			<description><![CDATA[記事の内容です。]]></description>
 			<pubDate>Mon, 9 Jun 2008 20:50:30 +0900</pubDate>
 		</item>
 	</channel>
