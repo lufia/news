@@ -133,40 +133,39 @@ type Feed struct {
 	//Version string `xml:"version,attr"`
 	//Lang string `xml:"lang,attr,omitempty"`
 
-	//Categories []Text `xml:"category,omitempty"`
 	//Contributors []Person `xml:"contributor,omitempty"`
 	//Generator Generator `xml:"generator,omitempty"`
 	//Icon string `xml:"icon,omitempty"`
 	//Logo string `xml:"logo,omitempty"`
-	//Categories []Category `xml:"category,omitempty"`
 
-	Title    Text      `xml:"title"`
-	Subtitle Text      `xml:"subtitle,omitempty"`
-	Links    []Link    `xml:"link"`
-	Authors  []Person  `xml:"author"`
-	ID       string    `xml:"id"`
-	Rights   Text      `xml:"rights,omitempty"`
-	Updated  time.Time `xml:"updated"`
-	Summary  string    `xml:"summary,omitempty"`
-	Entries  []*Entry  `xml:"entry"`
+	Title      Text       `xml:"title"`
+	Subtitle   Text       `xml:"subtitle,omitempty"`
+	Links      []Link     `xml:"link"`
+	Authors    []Person   `xml:"author"`
+	ID         string     `xml:"id"`
+	Rights     Text       `xml:"rights,omitempty"`
+	Updated    time.Time  `xml:"updated"`
+	Summary    string     `xml:"summary,omitempty"`
+	Categories []Category `xml:"category,omitempty"`
+	Entries    []*Entry   `xml:"entry"`
 }
 
 // EntryはAtom文書におけるEntry要素をあらわす。
 type Entry struct {
 	//Contributors []Person `xml:"contributor,omitempty"`
 	//Created time.Time `xml:"created,omitempty"?
-	//Categories []Category `xml:"category,omitempty"`
 	//Source Link?
 
-	Title     Text      `xml:"title"`
-	Links     []Link    `xml:"link,omitempty"`
-	Authors   []Person  `xml:"author,omitempty"`
-	ID        string    `xml:"id"`
-	Updated   time.Time `xml:"updated"`
-	Published time.Time `xml:"published,omitempty"`
-	Rights    Text      `xml:"rights,omitempty"`
-	Summary   Text      `xml:"summary,omitempty"`
-	Content   Text      `xml:"content,omitempty"`
+	Title      Text       `xml:"title"`
+	Links      []Link     `xml:"link,omitempty"`
+	Authors    []Person   `xml:"author,omitempty"`
+	Categories []Category `xml:"category,omitempty"`
+	ID         string     `xml:"id"`
+	Updated    time.Time  `xml:"updated"`
+	Published  time.Time  `xml:"published,omitempty"`
+	Rights     Text       `xml:"rights,omitempty"`
+	Summary    Text       `xml:"summary,omitempty"`
+	Content    Text       `xml:"content,omitempty"`
 }
 
 func (entry *Entry) Article() string {

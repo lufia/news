@@ -26,12 +26,18 @@ func TestParse(t *testing.T) {
 				Updated: time.Date(2003, 12, 13, 18, 30, 02, 0, time.UTC),
 				Authors: Persons("John Doe"),
 				ID:      "urn:uuid:60a76c80-d399-11d9-b93C-0003939e0af6",
+				Categories: []Category{
+					Category{Term: "Music", Label: "音楽"},
+				},
 				Entries: []*Entry{
 					&Entry{
 						Title:   S("Atom-Powered Robots Run Amok"),
 						Links:   URLs("http://example.org/2003/12/13/atom03"),
 						ID:      "urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a",
 						Updated: time.Date(2003, 12, 13, 18, 30, 02, 0, time.UTC),
+						Categories: []Category{
+							Category{Term: "Music", Label: "音楽"},
+						},
 						Summary: S("Some text."),
 					},
 				},
@@ -146,11 +152,13 @@ var xmlStringSimple = strings.TrimSpace(`
 		<name>John Doe</name>
 	</author>
 	<id>urn:uuid:60a76c80-d399-11d9-b93C-0003939e0af6</id>
+	<category term="Music" label="音楽"/>
 	<entry>
 		<title>Atom-Powered Robots Run Amok</title>
 		<link href="http://example.org/2003/12/13/atom03"/>
 		<id>urn:uuid:1225c695-cfb8-4ebb-aaaa-80da344efa6a</id>
 		<updated>2003-12-13T18:30:02Z</updated>
+		<category term="Music" label="音楽"/>
 		<summary>Some text.</summary>
 	</entry>
 </feed>
