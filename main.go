@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"flag"
 	"log"
 	"net"
 	"net/smtp"
@@ -20,6 +21,7 @@ var (
 )
 
 func main() {
+	flag.Parse()
 	f, err := feed.Parse(os.Stdin)
 	if err != nil {
 		log.Fatalln("Parse:", err)
@@ -46,7 +48,7 @@ func main() {
 		log.Fatalln("SplitHostPort:", err)
 	}
 	auth := smtp.PlainAuth("", *user, *password, host)
-	err = smtp.SendMail(addr, auth, *from, []string{*to}, buf.Bytes())
+	err = smtp.SendMail(*addr, auth, *from, []string{*to}, buf.Bytes())
 	if err != nil {
 		log.Fatalln("SendMail:", err)
 	}
