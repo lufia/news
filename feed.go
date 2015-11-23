@@ -9,9 +9,9 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/lufia/news/feed/atom"
-	"github.com/lufia/news/feed/rss1"
-	"github.com/lufia/news/feed/rss2"
+	"github.com/lufia/feed/atom"
+	"github.com/lufia/feed/rss1"
+	"github.com/lufia/feed/rss2"
 )
 
 type distinctElement struct {
