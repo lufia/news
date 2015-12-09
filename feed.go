@@ -167,7 +167,8 @@ func Parse(r io.Reader) (feed *Feed, err error) {
 		err = feed.ImportFromRSS2(v)
 		return
 	case *atom.Feed:
-		return nil, errors.New("not implement")
+		err = feed.ImportFromAtom(v)
+		return
 	default:
 		return nil, errors.New("unknown feed type")
 	}
@@ -204,4 +205,35 @@ func (feed *Feed) ImportFromRSS2(r *rss2.Feed) (err error) {
 		p.Content = item.Content()
 	}
 	return
+}
+
+func (feed *Feed) ImportFromAtom(r *atom.Feed) (err error) {
+	feed.Title = r.Title.Content
+	feed.URL = r.AlternateURL()
+	feed.Summary = r.Summary
+	feed.Articles = make([]Article, len(r.Entries))
+	for i, entry := range r.Entries {
+		p := &feed.Articles[i]
+		p.Title = entry.Title.Content
+		p.ID = entry.ID
+		p.URL = entry.AlternateURL()
+		p.Authors = feed.atomAuthors(entry.Authors)
+		p.Published = entry.PublishedTime()
+
+		var s string
+		s, err = entry.Content.HTML()
+		if err != nil {
+			return
+		}
+		p.Content = s
+	}
+	return
+}
+
+func (feed *Feed) atomAuthors(authors []atom.Person) []string {
+	a := make([]string, len(authors))
+	for i, p := range authors {
+		a[i] = p.Name
+	}
+	return a
 }

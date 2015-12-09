@@ -148,6 +148,10 @@ type Feed struct {
 	Entries    []*Entry   `xml:"entry"`
 }
 
+func (feed *Feed) AlternateURL() string {
+	return alternateURL(feed.Links)
+}
+
 // EntryはAtom文書におけるEntry要素をあらわす。
 type Entry struct {
 	//Contributors []Person `xml:"contributor,omitempty"`
@@ -174,6 +178,10 @@ func (entry *Entry) Article() string {
 	return ""
 }
 
+func (entry *Entry) AlternateURL() string {
+	return alternateURL(entry.Links)
+}
+
 func (entry *Entry) PublishedTime() time.Time {
 	if !entry.Published.IsZero() {
 		return entry.Published
@@ -186,6 +194,15 @@ func (entry *Entry) UpdatedTime() time.Time {
 		return entry.Updated
 	}
 	return entry.Modified
+}
+
+func alternateURL(links []Link) string {
+	for _, link := range links {
+		if link.Rel == "alternate" {
+			return link.URL
+		}
+	}
+	return ""
 }
 
 func Parse(r io.Reader) (feed *Feed, err error) {
