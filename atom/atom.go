@@ -171,7 +171,7 @@ type Entry struct {
 
 	// atom 0.3 compatibility
 	Modified time.Time `xml:"modified,omitempty"`
-	Issued time.Time `xml:"issued,omitempty"`
+	Issued   time.Time `xml:"issued,omitempty"`
 }
 
 func (entry *Entry) Article() string {
