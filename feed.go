@@ -91,6 +91,15 @@ var decisionTable = []struct {
 		},
 		dialect: atomDialect,
 	},
+	{
+		elem: distinctElement{
+			XMLName: xml.Name{
+				Space: "http://purl.org/atom/ns#",
+				Local: "feed",
+			},
+		},
+		dialect: atomDialect,
+	},
 }
 
 var (

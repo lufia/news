@@ -164,10 +164,28 @@ type Entry struct {
 	Rights     Text       `xml:"rights,omitempty"`
 	Summary    Text       `xml:"summary,omitempty"`
 	Content    Text       `xml:"content,omitempty"`
+
+	// atom 0.3 compatibility
+	Modified time.Time `xml:"modified,omitempty"`
+	Issued time.Time `xml:"issued,omitempty"`
 }
 
 func (entry *Entry) Article() string {
 	return ""
+}
+
+func (entry *Entry) PublishedTime() time.Time {
+	if !entry.Published.IsZero() {
+		return entry.Published
+	}
+	return entry.Issued
+}
+
+func (entry *Entry) UpdatedTime() time.Time {
+	if !entry.Updated.IsZero() {
+		return entry.Updated
+	}
+	return entry.Modified
 }
 
 func Parse(r io.Reader) (feed *Feed, err error) {
