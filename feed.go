@@ -141,7 +141,7 @@ type Feed struct {
 	Title    string
 	URL      string
 	Summary  string
-	Articles []Article
+	Articles []*Article
 }
 
 type Article struct {
@@ -191,18 +191,20 @@ func (feed *Feed) ImportFromRSS2(r *rss2.Feed) (err error) {
 	feed.Title = r.Channel.Title
 	feed.URL = r.Channel.Link
 	feed.Summary = r.Channel.Description
-	feed.Articles = make([]Article, len(r.Channel.Items))
+	feed.Articles = make([]*Article, len(r.Channel.Items))
 	for i, item := range r.Channel.Items {
 		v := (*rss2Item)(item)
-		p := &feed.Articles[i]
-		p.Title = item.Title
+		p := &Article{
+			Title:     item.Title,
+			URL:       item.Link,
+			Authors:   v.Authors(),
+			Published: v.Published(),
+			Content:   item.Content(),
+		}
 		if p.ID, err = item.ID(); err != nil {
 			return
 		}
-		p.URL = item.Link
-		p.Authors = v.Authors()
-		p.Published = v.Published()
-		p.Content = item.Content()
+		feed.Articles[i] = p
 	}
 	return
 }
@@ -211,21 +213,22 @@ func (feed *Feed) ImportFromAtom(r *atom.Feed) (err error) {
 	feed.Title = r.Title.Content
 	feed.URL = r.AlternateURL()
 	feed.Summary = r.Summary
-	feed.Articles = make([]Article, len(r.Entries))
+	feed.Articles = make([]*Article, len(r.Entries))
 	for i, entry := range r.Entries {
-		p := &feed.Articles[i]
-		p.Title = entry.Title.Content
-		p.ID = entry.ID
-		p.URL = entry.AlternateURL()
-		p.Authors = feed.atomAuthors(entry.Authors)
-		p.Published = entry.PublishedTime()
-
+		p := &Article{
+			Title:     entry.Title.Content,
+			ID:        entry.ID,
+			URL:       entry.AlternateURL(),
+			Authors:   feed.atomAuthors(entry.Authors),
+			Published: entry.PublishedTime(),
+		}
 		var s string
 		s, err = entry.Content.HTML()
 		if err != nil {
 			return
 		}
 		p.Content = s
+		feed.Articles[i] = p
 	}
 	return
 }
