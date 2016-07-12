@@ -1,5 +1,5 @@
 // Package feed presets rss/atom reader.
-package feed
+package news
 
 import (
 	"bytes"
@@ -9,9 +9,9 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/lufia/feed/atom"
-	"github.com/lufia/feed/rss1"
-	"github.com/lufia/feed/rss2"
+	"github.com/lufia/news/atom"
+	"github.com/lufia/news/rss1"
+	"github.com/lufia/news/rss2"
 )
 
 type distinctElement struct {
