@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"time"
+	"unicode/utf8"
 
 	"github.com/lufia/news/atom"
 	"github.com/lufia/news/rss1"
@@ -120,11 +121,29 @@ func DetectDialect(r io.Reader) (*Dialect, error) {
 	return nil, errUnknownDialect
 }
 
+// Cleanup discard invalid chars in XML 1.0.
+func Cleanup(p []byte) []byte {
+	tab := []rune{'\v'}
+	for _, c := range tab {
+		n := utf8.RuneLen(c)
+		for {
+			i := bytes.IndexRune(p, c)
+			if i < 0 {
+				break
+			}
+			copy(p[i:], p[i+n:])
+			p = p[:len(p)-n]
+		}
+	}
+	return p
+}
+
 func parse(r io.Reader) (feed interface{}, err error) {
 	buf, err := ioutil.ReadAll(r)
 	if err != nil {
 		return
 	}
+	buf = Cleanup(buf)
 	fin := bytes.NewReader(buf)
 	d, err := DetectDialect(fin)
 	if err != nil {
