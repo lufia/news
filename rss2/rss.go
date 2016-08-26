@@ -10,7 +10,8 @@ import (
 type Date time.Time
 
 const (
-	RFC2822 = "Mon, _2 Jan 2006 15:04:05 -0700"
+	RFC2822  = "Mon, _2 Jan 2006 15:04:05 -0700"
+	RFC2822Z = "Mon, _2 Jan 2006 15:04:05 MST"
 )
 
 var (
@@ -29,7 +30,9 @@ func (date *Date) UnmarshalXML(d *xml.Decoder, start xml.StartElement) (err erro
 	}
 	t, err := time.Parse(RFC2822, s)
 	if err != nil {
-		return
+		if t, err = time.Parse(RFC2822Z, s); err != nil {
+			return
+		}
 	}
 	*date = Date(t)
 	return
