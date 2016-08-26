@@ -162,7 +162,8 @@ func Parse(r io.Reader) (feed *Feed, err error) {
 	feed = &Feed{}
 	switch v := p.(type) {
 	case *rss1.Feed:
-		return nil, errors.New("not implement")
+		err = feed.ImportFromRSS1(v)
+		return
 	case *rss2.Feed:
 		err = feed.ImportFromRSS2(v)
 		return
@@ -172,6 +173,25 @@ func Parse(r io.Reader) (feed *Feed, err error) {
 	default:
 		return nil, errors.New("unknown feed type")
 	}
+}
+
+func (feed *Feed) ImportFromRSS1(r *rss1.Feed) (err error) {
+	feed.Title = r.Channel.Title
+	feed.URL = r.Channel.Link
+	feed.Summary = r.Channel.Description
+	feed.Articles = make([]*Article, len(r.Items))
+	for i, item := range r.Items {
+		p := &Article{
+			Title:     item.Title,
+			ID:        r.Channel.Indexes[i].URL,
+			URL:       item.Link,
+			Authors:   []string{item.Creator},
+			Published: item.Date,
+			Content:   item.Description,
+		}
+		feed.Articles[i] = p
+	}
+	return nil
 }
 
 type rss2Item rss2.Item
