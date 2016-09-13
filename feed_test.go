@@ -51,3 +51,23 @@ func TestDetectDialect(t *testing.T) {
 		}
 	}
 }
+
+func TestCleanup(t *testing.T) {
+	tab := []struct {
+		s    string
+		want string
+	}{
+		{s: "abc", want: "abc"},
+		{s: "abc\v", want: "abc"},
+		{s: "\vabc", want: "abc"},
+		{s: "\va\vb\vc\v", want: "abc"},
+		{s: "\v\v", want: ""},
+	}
+	for _, v := range tab {
+		r := Cleanup([]byte(v.s))
+		s := string(r)
+		if s != v.want {
+			t.Errorf("Cleanup(%q) = %q; want %q", v.s, s, v.want)
+		}
+	}
+}
