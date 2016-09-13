@@ -198,7 +198,7 @@ func (entry *Entry) UpdatedTime() time.Time {
 
 func alternateURL(links []Link) string {
 	for _, link := range links {
-		if link.Rel == "alternate" {
+		if link.Rel == "alternate" || link.Rel == "" {
 			return link.URL
 		}
 	}
