@@ -121,7 +121,7 @@ func DetectDialect(r io.Reader) (*Dialect, error) {
 	return nil, errUnknownDialect
 }
 
-// Cleanup discard invalid chars in XML 1.0.
+// Cleanup discards invalid chars in XML 1.0.
 func Cleanup(p []byte) []byte {
 	tab := []rune{'\v'}
 	for _, c := range tab {
